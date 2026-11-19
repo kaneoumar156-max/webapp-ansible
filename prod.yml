@@ -1,0 +1,6 @@
+all:
+  children:
+    prod:
+      hosts:
+        client1:
+          ansible_host: 192.168.179.137

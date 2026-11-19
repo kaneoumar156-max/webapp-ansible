@@ -1,0 +1,30 @@
+---
+- name: Deploy Apache with Docker
+  hosts: prod
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - python3-docker
+        state: present
+
+    - name: Start and enable Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+    - name: Deploy Apache container
+      community.docker.docker_container:
+        name: webapp
+        image: httpd
+        state: started
+        ports:
+          - "80:80"
+        restart_policy: always

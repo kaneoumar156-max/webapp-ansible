@@ -1,0 +1,4 @@
+ansible_user: server1
+ansible_ssh_pass: "1234"
+ansible_become: true
+ansible_become_method: sudo
