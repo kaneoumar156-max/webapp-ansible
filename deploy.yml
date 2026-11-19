@@ -4,9 +4,20 @@
   become: true
 
   tasks:
+
+    - name: Install git and wget on CentOS
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - wget
+      when: ansible_facts['os_family'] == "RedHat"
+
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: true
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Install Docker
       ansible.builtin.apt:
@@ -14,17 +25,35 @@
           - docker.io
           - python3-docker
         state: present
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Start and enable Docker
       ansible.builtin.service:
         name: docker
         state: started
         enabled: true
+
+    - name: Create webapp directory
+      ansible.builtin.file:
+        path: /opt/webapp
+        state: directory
+        mode: '0755'
+
+    - name: Copy HTML template to client
+      ansible.builtin.template:
+        src: templates/index.html.j2
+        dest: /opt/webapp/index.html
+        mode: '0644'
+
     - name: Deploy Apache container
       community.docker.docker_container:
         name: webapp
         image: httpd
         state: started
+        recreate: true
         ports:
           - "80:80"
+        volumes:
+          - /opt/webapp/index.html:/usr/local/apache2/htdocs/index.html:ro
         restart_policy: always
+
